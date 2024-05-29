@@ -1,13 +1,23 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+import { ApolloProvider } from "@apollo/client";
+import client from "./ApolloClient";
+if (window.Telegram && window.Telegram.WebApp) {
+  console.log("Telegram WebApp initialized");
+  window.Telegram.WebApp.ready();
+} else {
+  console.log("Telegram WebApp not available");
+}
+const root = ReactDOM.createRoot(document.getElementById("root"));
+console.log("GraphQL API URL:", process.env.REACT_APP_API_URL);
 root.render(
   <React.StrictMode>
-    <App />
+    <ApolloProvider client={client}>
+      <App />
+    </ApolloProvider>
   </React.StrictMode>
 );
 
