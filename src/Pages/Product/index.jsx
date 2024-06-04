@@ -41,11 +41,11 @@ const Product = ({ onAddToCart, onAddToWishlist, wishlistItems }) => {
   });
   const [addedToCart, setAddedToCart] = useState(false);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error :(</p>;
+  if (loading) return <p className="text-center text-gray-600">Loading...</p>;
+  if (error) return <p className="text-center text-red-600">Error :(</p>;
 
   const product = data.products.items[0];
-  console.log(product, "uniq name");
+
   const handleAddToCart = () => {
     onAddToCart(product);
     setAddedToCart(true);
@@ -60,36 +60,39 @@ const Product = ({ onAddToCart, onAddToWishlist, wishlistItems }) => {
 
   if (!product) {
     return (
-      <div className="p-4 bg-gray-100 min-h-screen">Product not found</div>
+      <div className="p-4 bg-gray-100 min-h-screen flex items-center justify-center">
+        <p className="text-xl text-gray-600">Product not found</p>
+      </div>
     );
   }
 
   return (
     <div className="p-4 bg-gray-100 min-h-screen">
-      <div className="max-w-7xl mx-auto bg-white rounded-md shadow-md p-4">
+      <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-lg p-6">
         <div className="flex flex-col md:flex-row">
           <img
             src={product.image?.url}
             alt={product.name}
-            className="w-full md:w-1/2 h-64 object-cover mb-4 md:mb-0"
+            className="w-full md:w-1/2 h-64 object-cover mb-4 md:mb-0 rounded-lg transition-transform duration-300 transform hover:scale-105"
           />
-          <div className="md:ml-4">
-            <h2 className="text-2xl font-bold mb-2">{product.name}</h2>
-            <div
-              className="text-lg mb-4 text-gray-700"
-              // dangerouslySetInnerHTML={{
-              //   __html: product.short_description.html,
-              // }}
-            >
-              ${product.short_description?.html}
+          <div className="md:ml-6">
+            <h2 className="text-3xl font-bold mb-4 text-gray-800">
+              {product.name}
+            </h2>
+            <div className="text-lg mb-4 text-gray-700">
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: product.short_description?.html,
+                }}
+              />
             </div>
-            <p className="text-xl font-bold mb-4">
+            <p className="text-2xl font-bold mb-4 text-gray-800">
               ${product.price_range?.minimum_price.regular_price?.value}
             </p>
-            <div className="flex items-center">
+            <div className="flex items-center space-x-4">
               <button
                 onClick={handleAddToCart}
-                className={`py-2 px-4 rounded transition-colors duration-300 flex items-center ${
+                className={`py-3 px-6 rounded-lg transition-colors duration-300 flex items-center ${
                   addedToCart
                     ? "bg-green-500 text-white"
                     : "bg-blue-500 text-white hover:bg-blue-600"
@@ -103,7 +106,7 @@ const Product = ({ onAddToCart, onAddToWishlist, wishlistItems }) => {
               </button>
               <button
                 onClick={handleAddToWishlist}
-                className="bg-gray-300 text-black py-2 px-4 rounded ml-2 hover:bg-gray-400 transition-colors duration-300 flex items-center"
+                className="bg-gray-300 text-black py-3 px-6 rounded-lg hover:bg-gray-400 transition-colors duration-300 flex items-center"
               >
                 <FontAwesomeIcon
                   icon={faHeart}

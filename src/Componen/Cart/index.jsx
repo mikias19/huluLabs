@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faTrash } from "@fortawesome/free-solid-svg-icons";
+import "./index.css";
 
 const CartSidebar = ({
   cartItems,
@@ -24,6 +25,10 @@ const CartSidebar = ({
     navigate("/checkout");
   };
 
+  const handleRemoveItem = (id) => {
+    onRemove(id);
+  };
+
   const totalPrice = cartItems.reduce(
     (total, item) =>
       total + item.price_range.minimum_price.regular_price.value * item.count,
@@ -44,13 +49,13 @@ const CartSidebar = ({
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-4 bg-blue-600 text-white flex justify-between items-center">
+        <div className="p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white flex justify-between items-center">
           <h2 className="text-xl font-bold">Cart</h2>
           <button onClick={onClose} className="text-xl text-white">
             <FontAwesomeIcon icon={faTimes} />
           </button>
         </div>
-        <div className="p-4 overflow-y-auto">
+        <div className="p-4 overflow-y-auto h-[calc(100%-5rem)] custom-scrollbar">
           {cartItems.length > 0 ? (
             cartItems.map((item) => (
               <div key={item.id} className="border-b py-4">
@@ -88,7 +93,7 @@ const CartSidebar = ({
                     </button>
                   </div>
                   <button
-                    onClick={() => onRemove(item.id)}
+                    onClick={() => handleRemoveItem(item.id)}
                     className="text-red-500 hover:text-red-700 transition ml-4"
                   >
                     <FontAwesomeIcon icon={faTrash} />
@@ -97,7 +102,9 @@ const CartSidebar = ({
               </div>
             ))
           ) : (
-            <p className="text-gray-700">Your cart is empty.</p>
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-700">Your cart is empty.</p>
+            </div>
           )}
           {cartItems.length > 0 && (
             <div className="mt-4">

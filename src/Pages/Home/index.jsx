@@ -39,7 +39,7 @@ const Home = ({ onAddToCart, onAddToWishlist, wishlistItems }) => {
 
   return (
     <div className="bg-gray-100 min-h-screen">
-      <CategoryList />
+      {/* <CategoryList /> */}
       <div className="p-4 max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {products.map((product) => (
           <ProductCard

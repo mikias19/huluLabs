@@ -1,0 +1,65 @@
+.header {
+  background: linear-gradient(90deg, #4f46e5, #3b82f6);
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 a {
+  color: white;
+  font-weight: bold;
+  font-size: 1.5rem;
+  text-decoration: none;
+}
+
+.header input {
+  flex-grow: 1;
+  padding: 0.5rem;
+  border-radius: 0.375rem 0 0 0.375rem;
+  border: none;
+}
+
+.header button {
+  background-color: #f59e0b;
+  padding: 0.5rem 1rem;
+  border-radius: 0 0.375rem 0.375rem 0;
+  color: white;
+  cursor: pointer;
+  border: none;
+}
+
+.header nav button {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.header nav button span {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  background-color: #ef4444;
+  border-radius: 9999px;
+  width: 1.25rem;
+  height: 1.25rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.75rem;
+}
+
+.header nav .relative:hover .absolute {
+  display: block;
+}
+
+.header nav .absolute {
+  display: none;
+  right: 0;
+  margin-top: 0.5rem;
+  background: white;
+  color: black;
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}

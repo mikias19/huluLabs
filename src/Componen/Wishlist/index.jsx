@@ -2,12 +2,17 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
+import "./wishlistindex.css";
 
 const WishlistSidebar = ({ wishlistItems, isOpen, onClose, onRemove }) => {
   const handleOverlayClick = (e) => {
     if (e.target.id === "wishlist-overlay") {
       onClose();
     }
+  };
+
+  const handleRemoveItem = (id) => {
+    onRemove(id);
   };
 
   return (
@@ -19,12 +24,13 @@ const WishlistSidebar = ({ wishlistItems, isOpen, onClose, onRemove }) => {
       onClick={handleOverlayClick}
     >
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg transform transition-transform duration-300 ${
+        className={`fixed top-0 right-0 h-full w-full sm:w-80 bg-white shadow-lg transform transition-transform duration-300 ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
         onClick={(e) => e.stopPropagation()}
+        style={{ maxHeight: "100vh" }}
       >
-        <div className="p-4 bg-blue-600 text-white flex justify-between items-center">
+        <div className="p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white flex justify-between items-center">
           <h2 className="text-xl font-bold">
             Wishlist ({wishlistItems.length})
           </h2>
@@ -32,7 +38,10 @@ const WishlistSidebar = ({ wishlistItems, isOpen, onClose, onRemove }) => {
             <FontAwesomeIcon icon={faTimes} />
           </button>
         </div>
-        <div className="p-4 overflow-y-auto">
+        <div
+          className="p-4 overflow-y-auto h-[calc(100%-5rem)] custom-scrollbar"
+          style={{ maxHeight: "calc(100vh - 5rem)" }}
+        >
           {wishlistItems.length > 0 ? (
             wishlistItems.map((item) => (
               <div key={item.id} className="border-b py-4">
@@ -45,7 +54,7 @@ const WishlistSidebar = ({ wishlistItems, isOpen, onClose, onRemove }) => {
                     <img
                       src={item.image.url || ""}
                       alt={item.name}
-                      className="w-16 h-16 object-cover"
+                      className="w-16 h-16 object-cover rounded"
                     />
                   </Link>
                   <div className="flex-grow">
@@ -57,12 +66,11 @@ const WishlistSidebar = ({ wishlistItems, isOpen, onClose, onRemove }) => {
                         "No description available."}
                     </p>
                     <p className="text-xl font-bold">
-                      {" "}
                       ${item.price_range.minimum_price.regular_price.value}
                     </p>
                   </div>
                   <button
-                    onClick={() => onRemove(item.id)}
+                    onClick={() => handleRemoveItem(item.id)}
                     className="text-red-500 hover:text-red-700 transition ml-4"
                   >
                     <FontAwesomeIcon icon={faTrash} />
@@ -71,7 +79,9 @@ const WishlistSidebar = ({ wishlistItems, isOpen, onClose, onRemove }) => {
               </div>
             ))
           ) : (
-            <p className="text-gray-700">Your wishlist is empty.</p>
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-700">Your wishlist is empty.</p>
+            </div>
           )}
         </div>
       </div>

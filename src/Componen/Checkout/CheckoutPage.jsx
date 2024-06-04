@@ -1,3 +1,619 @@
+// import React, { useState, useEffect } from "react";
+// import { gql, useMutation, useQuery, useLazyQuery } from "@apollo/client";
+// import { useNavigate } from "react-router-dom";
+// import "./checkout.css";
+
+// const GET_COUNTRIES = gql`
+//   query GetCountries {
+//     countries {
+//       id
+//       full_name_locale
+//     }
+//   }
+// `;
+
+// const GET_REGIONS = gql`
+//   query GetRegions($countryCode: String!) {
+//     country(id: $countryCode) {
+//       available_regions {
+//         code
+//         name
+//       }
+//     }
+//   }
+// `;
+
+// const GET_PAYMENT_METHODS = gql`
+//   query GetPaymentMethods($cartId: String!) {
+//     cart(cart_id: $cartId) {
+//       available_payment_methods {
+//         code
+//         title
+//       }
+//     }
+//   }
+// `;
+
+// const CREATE_CART = gql`
+//   mutation CreateCart {
+//     createEmptyCart
+//   }
+// `;
+
+// const ADD_ITEM_TO_CART = gql`
+//   mutation AddItemToCart($cartId: String!, $sku: String!, $quantity: Float!) {
+//     addSimpleProductsToCart(
+//       input: {
+//         cart_id: $cartId
+//         cart_items: [{ data: { sku: $sku, quantity: $quantity } }]
+//       }
+//     ) {
+//       cart {
+//         items {
+//           id
+//           quantity
+//         }
+//       }
+//     }
+//   }
+// `;
+
+// const SET_GUEST_EMAIL = gql`
+//   mutation SetGuestEmail($cartId: String!, $email: String!) {
+//     setGuestEmailOnCart(input: { cart_id: $cartId, email: $email }) {
+//       cart {
+//         email
+//       }
+//     }
+//   }
+// `;
+
+// const SET_SHIPPING_ADDRESS = gql`
+//   mutation SetShippingAddress(
+//     $cartId: String!
+//     $address: ShippingAddressInput!
+//   ) {
+//     setShippingAddressesOnCart(
+//       input: { cart_id: $cartId, shipping_addresses: [{ address: $address }] }
+//     ) {
+//       cart {
+//         shipping_addresses {
+//           firstname
+//           lastname
+//           street
+//           city
+//           region {
+//             code
+//             label
+//           }
+//           postcode
+//           country {
+//             code
+//             label
+//           }
+//           telephone
+//         }
+//       }
+//     }
+//   }
+// `;
+
+// const SET_BILLING_ADDRESS = gql`
+//   mutation SetBillingAddress($cartId: String!, $address: BillingAddressInput!) {
+//     setBillingAddressOnCart(
+//       input: { cart_id: $cartId, billing_address: { address: $address } }
+//     ) {
+//       cart {
+//         billing_address {
+//           firstname
+//           lastname
+//           street
+//           city
+//           region {
+//             code
+//             label
+//           }
+//           postcode
+//           country {
+//             code
+//             label
+//           }
+//           telephone
+//         }
+//       }
+//     }
+//   }
+// `;
+
+// const SET_PAYMENT_METHOD = gql`
+//   mutation SetPaymentMethod($cartId: String!, $code: String!) {
+//     setPaymentMethodOnCart(
+//       input: { cart_id: $cartId, payment_method: { code: $code } }
+//     ) {
+//       cart {
+//         selected_payment_method {
+//           code
+//           title
+//         }
+//       }
+//     }
+//   }
+// `;
+
+// const PLACE_ORDER = gql`
+//   mutation PlaceOrder($cartId: String!) {
+//     placeOrder(input: { cart_id: $cartId }) {
+//       order {
+//         order_number
+//       }
+//     }
+//   }
+// `;
+
+// const CheckoutPage = ({ cartItems, onOrderPlaced }) => {
+//   const [cartId, setCartId] = useState(null);
+//   const [step, setStep] = useState(1);
+//   const [userInfo, setUserInfo] = useState({
+//     email: "",
+//     shippingAddress: {
+//       firstname: "",
+//       lastname: "",
+//       street: "",
+//       city: "",
+//       region: "",
+//       postcode: "",
+//       country_code: "US",
+//       telephone: "",
+//     },
+//     billingAddress: {
+//       firstname: "",
+//       lastname: "",
+//       street: "",
+//       city: "",
+//       region: "",
+//       postcode: "",
+//       country_code: "US",
+//       telephone: "",
+//     },
+//   });
+//   const [countries, setCountries] = useState([]);
+//   const [regions, setRegions] = useState([]);
+//   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
+
+//   const [createCart] = useMutation(CREATE_CART);
+//   const [addItemToCart] = useMutation(ADD_ITEM_TO_CART);
+//   const [setGuestEmail] = useMutation(SET_GUEST_EMAIL);
+//   const [setShippingAddress] = useMutation(SET_SHIPPING_ADDRESS);
+//   const [setBillingAddress] = useMutation(SET_BILLING_ADDRESS);
+//   const [setPaymentMethod] = useMutation(SET_PAYMENT_METHOD);
+//   const [placeOrder] = useMutation(PLACE_ORDER);
+//   const navigate = useNavigate();
+
+//   // Fetch countries
+//   const { loading: loadingCountries, data: dataCountries } = useQuery(
+//     GET_COUNTRIES,
+//     {
+//       onCompleted: (data) => {
+//         setCountries(data.countries);
+//       },
+//     }
+//   );
+
+//   // Lazy query to fetch regions
+//   const [fetchRegions, { loading: loadingRegions, data: dataRegions }] =
+//     useLazyQuery(GET_REGIONS, {
+//       onCompleted: (data) => {
+//         setRegions(data.country.available_regions);
+//       },
+//     });
+
+//   // Fetch regions when country changes
+//   useEffect(() => {
+//     if (userInfo.shippingAddress.country_code) {
+//       fetchRegions({
+//         variables: { countryCode: userInfo.shippingAddress.country_code },
+//       });
+//     }
+//   }, [userInfo.shippingAddress.country_code, fetchRegions]);
+
+//   // Fetch payment methods when cart is created
+//   const { loading: loadingPaymentMethods, data: dataPaymentMethods } = useQuery(
+//     GET_PAYMENT_METHODS,
+//     {
+//       variables: { cartId },
+//       skip: !cartId,
+//     }
+//   );
+
+//   useEffect(() => {
+//     const initializeCart = async () => {
+//       try {
+//         const response = await createCart();
+//         const newCartId = response.data.createEmptyCart;
+//         setCartId(newCartId);
+
+//         for (const item of cartItems) {
+//           await addItemToCart({
+//             variables: {
+//               cartId: newCartId,
+//               sku: item.sku,
+//               quantity: item.count,
+//             },
+//           });
+//         }
+//       } catch (error) {
+//         console.error("Error initializing cart:", error);
+//       }
+//     };
+
+//     initializeCart();
+//   }, [cartItems, createCart, addItemToCart]);
+
+//   const handleInputChange = (e) => {
+//     const { name, value, dataset } = e.target;
+//     const addressType = dataset.type;
+
+//     setUserInfo((prevInfo) => ({
+//       ...prevInfo,
+//       [addressType]: {
+//         ...prevInfo[addressType],
+//         [name]: value,
+//       },
+//     }));
+//   };
+
+//   const handleNextStep = () => {
+//     console.log("User Info:", userInfo);
+//     setStep(step + 1);
+//   };
+
+//   const handlePreviousStep = () => {
+//     setStep(step - 1);
+//   };
+
+//   const handlePlaceOrder = async (e) => {
+//     e.preventDefault();
+//     console.log("Placing order with info:", userInfo);
+
+//     try {
+//       await setGuestEmail({ variables: { cartId, email: userInfo.email } });
+//       await setShippingAddress({
+//         variables: { cartId, address: userInfo.shippingAddress },
+//       });
+//       await setBillingAddress({
+//         variables: { cartId, address: userInfo.billingAddress },
+//       });
+//       await setPaymentMethod({
+//         variables: { cartId, code: selectedPaymentMethod },
+//       });
+
+//       const response = await placeOrder({ variables: { cartId } });
+//       if (response.data) {
+//         console.log("Order placed successfully:", response.data);
+//         onOrderPlaced();
+//         navigate("/order-confirmation", {
+//           state: { orderNumber: response.data.placeOrder.order.order_number },
+//         });
+//       } else {
+//         console.error("Order failed", response);
+//       }
+//     } catch (error) {
+//       console.error("Error placing order:", error);
+//     }
+//   };
+
+//   const totalPrice = cartItems.reduce(
+//     (total, item) =>
+//       total + item.price_range.minimum_price.regular_price.value * item.count,
+//     0
+//   );
+
+//   return (
+//     <div className="checkout-page p-8 bg-gray-100 min-h-screen">
+//       <h1 className="text-4xl font-bold mb-8 text-center text-blue-600">
+//         Checkout
+//       </h1>
+//       <form
+//         className="bg-white p-8 rounded-lg shadow-lg"
+//         onSubmit={handlePlaceOrder}
+//       >
+//         {step === 1 && (
+//           <>
+//             <h2 className="text-2xl mb-4 text-gray-800">User Information</h2>
+//             <div className="mb-4">
+//               <input
+//                 type="email"
+//                 name="email"
+//                 value={userInfo.email}
+//                 onChange={handleInputChange}
+//                 placeholder="Email"
+//                 className="p-3 border rounded w-full"
+//                 required
+//               />
+//             </div>
+//             <button
+//               type="button"
+//               className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
+//               onClick={handleNextStep}
+//             >
+//               Next
+//             </button>
+//           </>
+//         )}
+//         {step === 2 && (
+//           <>
+//             <h2 className="text-2xl mb-4 text-gray-800">Shipping Address</h2>
+//             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+//               <input
+//                 type="text"
+//                 name="firstname"
+//                 data-type="shippingAddress"
+//                 value={userInfo.shippingAddress.firstname}
+//                 onChange={handleInputChange}
+//                 placeholder="First Name"
+//                 className="p-3 border rounded w-full"
+//                 required
+//               />
+//               <input
+//                 type="text"
+//                 name="lastname"
+//                 data-type="shippingAddress"
+//                 value={userInfo.shippingAddress.lastname}
+//                 onChange={handleInputChange}
+//                 placeholder="Last Name"
+//                 className="p-3 border rounded w-full"
+//                 required
+//               />
+//               <input
+//                 type="text"
+//                 name="street"
+//                 data-type="shippingAddress"
+//                 value={userInfo.shippingAddress.street}
+//                 onChange={handleInputChange}
+//                 placeholder="Street Address"
+//                 className="p-3 border rounded w-full"
+//                 required
+//               />
+//               <input
+//                 type="text"
+//                 name="city"
+//                 data-type="shippingAddress"
+//                 value={userInfo.shippingAddress.city}
+//                 onChange={handleInputChange}
+//                 placeholder="City"
+//                 className="p-3 border rounded w-full"
+//                 required
+//               />
+//               <select
+//                 name="region"
+//                 data-type="shippingAddress"
+//                 value={userInfo.shippingAddress.region}
+//                 onChange={handleInputChange}
+//                 className="p-3 border rounded w-full"
+//                 required
+//               >
+//                 <option value="">Select Region</option>
+//                 {regions.map((region) => (
+//                   <option key={region.code} value={region.code}>
+//                     {region.name}
+//                   </option>
+//                 ))}
+//               </select>
+//               <input
+//                 type="text"
+//                 name="postcode"
+//                 data-type="shippingAddress"
+//                 value={userInfo.shippingAddress.postcode}
+//                 onChange={handleInputChange}
+//                 placeholder="Postal Code"
+//                 className="p-3 border rounded w-full"
+//                 required
+//               />
+//               <select
+//                 name="country_code"
+//                 data-type="shippingAddress"
+//                 value={userInfo.shippingAddress.country_code}
+//                 onChange={handleInputChange}
+//                 className="p-3 border rounded w-full"
+//                 required
+//               >
+//                 <option value="">Select Country</option>
+//                 {countries.map((country) => (
+//                   <option key={country.id} value={country.id}>
+//                     {country.full_name_locale}
+//                   </option>
+//                 ))}
+//               </select>
+//               <input
+//                 type="text"
+//                 name="telephone"
+//                 data-type="shippingAddress"
+//                 value={userInfo.shippingAddress.telephone}
+//                 onChange={handleInputChange}
+//                 placeholder="Telephone"
+//                 className="p-3 border rounded w-full"
+//                 required
+//               />
+//             </div>
+//             <button
+//               type="button"
+//               className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition mr-2"
+//               onClick={handlePreviousStep}
+//             >
+//               Back
+//             </button>
+//             <button
+//               type="button"
+//               className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
+//               onClick={handleNextStep}
+//             >
+//               Next
+//             </button>
+//           </>
+//         )}
+//         {step === 3 && (
+//           <>
+//             <h2 className="text-2xl mb-4 text-gray-800">Billing Address</h2>
+//             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+//               <input
+//                 type="text"
+//                 name="firstname"
+//                 data-type="billingAddress"
+//                 value={userInfo.billingAddress.firstname}
+//                 onChange={handleInputChange}
+//                 placeholder="First Name"
+//                 className="p-3 border rounded w-full"
+//                 required
+//               />
+//               <input
+//                 type="text"
+//                 name="lastname"
+//                 data-type="billingAddress"
+//                 value={userInfo.billingAddress.lastname}
+//                 onChange={handleInputChange}
+//                 placeholder="Last Name"
+//                 className="p-3 border rounded w-full"
+//                 required
+//               />
+//               <input
+//                 type="text"
+//                 name="street"
+//                 data-type="billingAddress"
+//                 value={userInfo.billingAddress.street}
+//                 onChange={handleInputChange}
+//                 placeholder="Street Address"
+//                 className="p-3 border rounded w-full"
+//                 required
+//               />
+//               <input
+//                 type="text"
+//                 name="city"
+//                 data-type="billingAddress"
+//                 value={userInfo.billingAddress.city}
+//                 onChange={handleInputChange}
+//                 placeholder="City"
+//                 className="p-3 border rounded w-full"
+//                 required
+//               />
+//               <select
+//                 name="region"
+//                 data-type="billingAddress"
+//                 value={userInfo.billingAddress.region}
+//                 onChange={handleInputChange}
+//                 className="p-3 border rounded w-full"
+//                 required
+//               >
+//                 <option value="">Select Region</option>
+//                 {regions.map((region) => (
+//                   <option key={region.code} value={region.code}>
+//                     {region.name}
+//                   </option>
+//                 ))}
+//               </select>
+//               <input
+//                 type="text"
+//                 name="postcode"
+//                 data-type="billingAddress"
+//                 value={userInfo.billingAddress.postcode}
+//                 onChange={handleInputChange}
+//                 placeholder="Postal Code"
+//                 className="p-3 border rounded w-full"
+//                 required
+//               />
+//               <select
+//                 name="country_code"
+//                 data-type="billingAddress"
+//                 value={userInfo.billingAddress.country_code}
+//                 onChange={handleInputChange}
+//                 className="p-3 border rounded w-full"
+//                 required
+//               >
+//                 <option value="">Select Country</option>
+//                 {countries.map((country) => (
+//                   <option key={country.id} value={country.id}>
+//                     {country.full_name_locale}
+//                   </option>
+//                 ))}
+//               </select>
+//               <input
+//                 type="text"
+//                 name="telephone"
+//                 data-type="billingAddress"
+//                 value={userInfo.billingAddress.telephone}
+//                 onChange={handleInputChange}
+//                 placeholder="Telephone"
+//                 className="p-3 border rounded w-full"
+//                 required
+//               />
+//             </div>
+//             <button
+//               type="button"
+//               className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition mr-2"
+//               onClick={handlePreviousStep}
+//             >
+//               Back
+//             </button>
+//             <button
+//               type="button"
+//               className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
+//               onClick={handleNextStep}
+//             >
+//               Next
+//             </button>
+//           </>
+//         )}
+//         {step === 4 && (
+//           <>
+//             <h2 className="text-2xl mb-4 text-gray-800">Payment Information</h2>
+//             {loadingPaymentMethods ? (
+//               <p>Loading payment methods...</p>
+//             ) : dataPaymentMethods ? (
+//               <div className="mb-4">
+//                 {dataPaymentMethods.cart.available_payment_methods.map(
+//                   (method) => (
+//                     <div key={method.code} className="mb-2">
+//                       <input
+//                         type="radio"
+//                         id={method.code}
+//                         name="paymentMethod"
+//                         value={method.code}
+//                         checked={selectedPaymentMethod === method.code}
+//                         onChange={(e) =>
+//                           setSelectedPaymentMethod(e.target.value)
+//                         }
+//                         className="mr-2"
+//                       />
+//                       <label htmlFor={method.code} className="text-gray-700">
+//                         {method.title}
+//                       </label>
+//                     </div>
+//                   )
+//                 )}
+//               </div>
+//             ) : (
+//               <p>Error loading payment methods</p>
+//             )}
+//             <button
+//               type="button"
+//               className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition mr-2"
+//               onClick={handlePreviousStep}
+//             >
+//               Back
+//             </button>
+//             <button
+//               type="submit"
+//               className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
+//             >
+//               Place Order
+//             </button>
+//           </>
+//         )}
+//       </form>
+//     </div>
+//   );
+// };
+
+// export default CheckoutPage;
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
