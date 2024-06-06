@@ -45,7 +45,7 @@ const Product = ({ onAddToCart, onAddToWishlist, wishlistItems }) => {
   if (error) return <p className="text-center text-red-600">Error :(</p>;
 
   const product = data.products.items[0];
-
+  console.log(product.sku);
   const handleAddToCart = () => {
     onAddToCart(product);
     setAddedToCart(true);
